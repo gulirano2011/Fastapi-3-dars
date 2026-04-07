@@ -1,42 +1,37 @@
-# 1️⃣ FastAPI kutubxonasini chaqiramiz
 from fastapi import FastAPI
 from pydantic import BaseModel
+from typing import List
 
-# 2️⃣ FastAPI ilovasini yaratamiz
 app = FastAPI(
-    title="FastAPI Interaktiv API Hujjatlari",
-    description="Bu dastur Swagger UI (/docs) sahifasi orqali)"
+    title='Swagger',
+    description='Bu fastapida yaratilgan',
+    version='1.0.0'
 )
 
-# 3️⃣ Ma’lumot modelini yaratamiz (POST uchun)
-class Foydalanuvchi(BaseModel):
-    ism: str
-    yosh: int
+items: List[Item] = []
 
-# 4️⃣ GET so‘rov — oddiy salomlashuv
-@app.get("/")
-def read_root():
-    """
-    Asosiy sahifa.
-    Bu endpoint JSON formatda 'salom' so‘zini qaytaradi.
-    """
-    return {"salom": "FastAPI dunyosiga xush kelibsiz!"}
+class Item(BaseModel):
+    name: str
+    price: int
+    description: str | None = None
 
-# 5️⃣ GET so‘rov — parametr bilan ishlash
-@app.get("/salom/{ism}")
-def salom_ber(ism: str):
-    """
-    Foydalanuvchining ismini qabul qiladi va unga salom beradi.
-    """
-    return {"xabar": f"Salom, {ism}!"}
 
-# 6️⃣ POST so‘rov — ma’lumot yuborish
-@app.post("/foydalanuvchi/")
-def foydalanuvchi_qoshish(foydalanuvchi: Foydalanuvchi):
-    """
-    Yangi foydalanuvchi ma’lumotini qabul qilib, uni qaytaradi.
-    """
-    return {
-        "xabar": f"Foydalanuvchi qabul qilindi!",
-        "ma'lumot": foydalanuvchi
-    }
+@app.post(
+    "/items",
+    response_model=Item,
+    summary="Yangi item qo'shish",
+    tags=["items"]
+)
+async def create_item(item: Item):
+    items.append(item)
+    return item
+
+
+@app.get(
+    "/items",
+    response_model=List[Item],
+    summary="Barcha itemlarni olish",
+    tags=["items"]
+)
+async def get_items():
+    return items
